@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 
+import { AddVehicleDialog } from "@/components/dialogs/AddVehicleDialog";
+
 export default function VehicleRegistryPage() {
   const dispatch = useAppDispatch();
   const { vehicles, loading } = useAppSelector((state) => state.fleet);
@@ -49,9 +51,7 @@ export default function VehicleRegistryPage() {
             className="w-full sm:w-[250px] bg-card border-border/50 h-9 focus-visible:ring-primary/50"
           />
         </div>
-        <Button className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5">
-          <Plus className="mr-2 h-4 w-4" /> Add Vehicle
-        </Button>
+        <AddVehicleDialog />
       </div>
 
       <div className="rounded-xl border border-border/50 overflow-hidden bg-card/30 backdrop-blur-sm shadow-sm">

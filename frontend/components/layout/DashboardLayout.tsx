@@ -9,6 +9,7 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { logout } from "@/store/slices/authSlice";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const ROUTE_ROLES: Record<string, string[]> = {
   "/dashboard": ["Dispatcher", "Financial Analyst", "Admin"],
@@ -173,6 +174,7 @@ export default function DashboardLayout({
                 onClick={() => {
                   dispatch(logout());
                   router.push("/");
+                  toast.success("Successfully logged out!");
                 }}
                 className="ml-1 sm:ml-2 text-xs sm:text-sm font-medium text-muted-foreground hover:text-red-400 transition-colors px-2 py-1 rounded hover:bg-red-500/10"
               >

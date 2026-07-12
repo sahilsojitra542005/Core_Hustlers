@@ -103,7 +103,6 @@ export default function DashboardPage() {
                           <td className="px-4 py-3">{trip.driver?.name || '-'}</td>
                           <td className="px-4 py-3">
                             <span className={`px-2.5 py-1 rounded text-[10px] font-bold text-black uppercase tracking-wider ${
-                              trip.status === 'On Trip' ? 'bg-blue-400' :
                               trip.status === 'Completed' ? 'bg-green-500' :
                               trip.status === 'Dispatched' ? 'bg-blue-400' : 'bg-gray-400'
                             }`}>

@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { X, Plus } from "lucide-react";
+import { AddTripDialog } from "@/components/dialogs/AddTripDialog";
 
 export default function TripDispatcherPage() {
   const dispatch = useAppDispatch();
@@ -24,9 +25,7 @@ export default function TripDispatcherPage() {
       <div className="space-y-8">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-xs font-semibold text-muted-foreground tracking-wider uppercase">TRIP LIFECYCLE</h3>
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground h-9 text-xs shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5">
-            <Plus className="mr-2 h-3.5 w-3.5" /> Create Trip
-          </Button>
+          <AddTripDialog />
         </div>
         
         <div className="p-6 rounded-2xl border border-border/50 bg-card/30 backdrop-blur-sm shadow-sm">

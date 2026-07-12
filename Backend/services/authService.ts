@@ -25,7 +25,7 @@ export const loginUser = async (payload: { email: string; password: string; role
     user = await User.create({
       email: payload.email,
       password: payload.password,
-      role: payload.role,
+      role: payload.role as any,
     });
     return serializeUser(user);
   }

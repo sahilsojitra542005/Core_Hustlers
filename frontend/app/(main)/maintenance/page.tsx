@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
+import { AddMaintenanceDialog } from "@/components/dialogs/AddMaintenanceDialog";
+
 export default function MaintenancePage() {
   const dispatch = useAppDispatch();
   const { records, loading } = useAppSelector((state) => state.maintenance);
@@ -20,42 +22,8 @@ export default function MaintenancePage() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
       {/* Left Column: Log Service Record */}
       <div className="space-y-8">
-        <div className="p-6 rounded-2xl border border-border/50 bg-card/30 backdrop-blur-sm shadow-sm">
-          <h3 className="text-xs font-semibold text-muted-foreground tracking-wider uppercase mb-6">MOCK LOG SERVICE (PREVIEW)</h3>
-          <form className="space-y-5 opacity-80">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div className="space-y-2">
-                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">VEHICLE</Label>
-                <Input value="VAN-05" className="bg-white/5 border-border/50 h-11 focus-visible:ring-primary/50 text-foreground" readOnly />
-              </div>
-              
-              <div className="space-y-2">
-                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">SERVICE TYPE</Label>
-                <Input value="Oil Change" className="bg-white/5 border-border/50 h-11 focus-visible:ring-primary/50 text-foreground" readOnly />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              <div className="space-y-2">
-                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">COST</Label>
-                <Input value="2500" className="bg-white/5 border-border/50 h-11 focus-visible:ring-primary/50 text-foreground" readOnly />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">DATE</Label>
-                <Input value="07/07/2026" className="bg-white/5 border-border/50 h-11 focus-visible:ring-primary/50 text-foreground" readOnly />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">STATUS</Label>
-              <Input value="Active" className="bg-white/5 border-border/50 h-11 focus-visible:ring-primary/50 text-foreground" readOnly />
-            </div>
-
-            <Button disabled className="w-full bg-secondary/50 text-muted-foreground h-11 mt-6 rounded-xl transition-colors">
-              Save (Disabled)
-            </Button>
-          </form>
+        <div className="p-6 rounded-2xl border border-border/50 bg-card/30 backdrop-blur-sm shadow-sm flex items-center justify-center min-h-[200px]">
+          <AddMaintenanceDialog />
         </div>
 
         <div className="space-y-4 pt-6 px-2">
