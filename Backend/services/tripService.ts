@@ -5,6 +5,10 @@ import Driver from "../models/Driver.js";
 import FuelLog from "../models/FuelLog.js";
 import Expense from "../models/Expense.js";
 import HttpError from "../utils/HttpError.js";
+import {
+  optionalNonNegativeNumber,
+  requireNonNegativeNumber,
+} from "../utils/validation.js";
 
 export const listTrips = async (filters: { status?: string; search?: string }) => {
   const query: any = {};
@@ -42,10 +46,60 @@ export const createTrip = async (payload: {
   plannedDistance: number;
 }) => {
   const normalizedTripId = payload.tripId.toUpperCase().trim();
+  const cargoWeight = requireNonNegativeNumber(payload.cargoWeight, "cargoWeight");
+  const plannedDistance = requireNonNegativeNumber(
+    payload.plannedDistance,
+    "plannedDistance"
+  );
   const tripExists = await Trip.findOne({ tripId: normalizedTripId });
 
   if (tripExists) {
     throw new HttpError(400, "Trip ID must be unique");
+  }
+
+  if (payload.vehicleId) {
+    const vehicle = await Vehicle.findById(payload.vehicleId);
+    if (!vehicle) {
+      throw new HttpError(404, "Vehicle not found");
+    }
+
+    if (vehicle.status !== "Available") {
+      throw new HttpError(
+        400,
+        `Vehicle ${vehicle.modelName} is currently ${vehicle.status} and cannot be assigned.`
+      );
+    }
+
+    if (cargoWeight > vehicle.capacity) {
+      const diff = cargoWeight - vehicle.capacity;
+      throw new HttpError(
+        400,
+        `Vehicle Capacity: ${vehicle.capacity} kg. Cargo Weight: ${cargoWeight} kg. Capacity exceeded by ${diff} kg - dispatch blocked.`
+      );
+    }
+  }
+
+  if (payload.driverId) {
+    const driver = await Driver.findById(payload.driverId);
+    if (!driver) {
+      throw new HttpError(404, "Driver not found");
+    }
+
+    if (driver.status !== "Available") {
+      throw new HttpError(
+        400,
+        `Driver ${driver.name} is currently ${driver.status} and cannot be assigned.`
+      );
+    }
+
+    if (driver.licenseExpiryDate < new Date()) {
+      throw new HttpError(
+        400,
+        `Driver ${driver.name} has an expired license (Expired: ${new Date(
+          driver.licenseExpiryDate
+        ).toLocaleDateString()}) and cannot be assigned.`
+      );
+    }
   }
 
   return Trip.create({
@@ -54,8 +108,8 @@ export const createTrip = async (payload: {
     destination: payload.destination,
     vehicle: payload.vehicleId || undefined,
     driver: payload.driverId || undefined,
-    cargoWeight: payload.cargoWeight,
-    plannedDistance: payload.plannedDistance,
+    cargoWeight,
+    plannedDistance,
     status: "Draft",
   });
 };
@@ -158,6 +212,18 @@ export const completeTrip = async (
     durationMinutes?: number;
   }
 ) => {
+  const endOdometer = requireNonNegativeNumber(payload.endOdometer, "endOdometer");
+  const fuelConsumed = optionalNonNegativeNumber(
+    payload.fuelConsumed,
+    "fuelConsumed"
+  );
+  const fuelCost = optionalNonNegativeNumber(payload.fuelCost, "fuelCost");
+  const durationMinutes = optionalNonNegativeNumber(
+    payload.durationMinutes,
+    "durationMinutes"
+  );
+  const tollCost = optionalNonNegativeNumber(payload.tollCost, "tollCost") || 0;
+  const otherCost = optionalNonNegativeNumber(payload.otherCost, "otherCost") || 0;
   const session = await mongoose.startSession();
 
   try {
@@ -183,33 +249,34 @@ export const completeTrip = async (
         );
       }
 
-      if (payload.endOdometer < vehicle.odometer) {
+      const startOdometer = trip.startOdometer ?? vehicle.odometer;
+      if (endOdometer < startOdometer) {
         throw new HttpError(
           400,
-          `End odometer (${payload.endOdometer}) cannot be less than the start odometer (${vehicle.odometer})`
+          `End odometer (${endOdometer}) cannot be less than the start odometer (${startOdometer})`
         );
       }
 
       trip.status = "Completed";
-      trip.endOdometer = payload.endOdometer;
-      trip.fuelConsumed = payload.fuelConsumed;
-      trip.durationMinutes = payload.durationMinutes || 0;
+      trip.endOdometer = endOdometer;
+      trip.fuelConsumed = fuelConsumed;
+      trip.durationMinutes = durationMinutes || 0;
       await trip.save({ session });
 
       vehicle.status = "Available";
-      vehicle.odometer = payload.endOdometer;
+      vehicle.odometer = endOdometer;
       await vehicle.save({ session });
 
       driver.status = "Available";
       await driver.save({ session });
 
-      if ((payload.fuelConsumed || 0) > 0 && (payload.fuelCost || 0) > 0) {
+      if ((fuelConsumed || 0) > 0 && (fuelCost || 0) > 0) {
         await FuelLog.create(
           [
             {
               vehicle: vehicle._id,
-              liters: payload.fuelConsumed,
-              cost: payload.fuelCost,
+              liters: fuelConsumed,
+              cost: fuelCost,
               date: new Date(),
             },
           ],
@@ -217,16 +284,14 @@ export const completeTrip = async (
         );
       }
 
-      const tollVal = parseFloat(String(payload.tollCost)) || 0;
-      const otherVal = parseFloat(String(payload.otherCost)) || 0;
-      if (tollVal > 0 || otherVal > 0) {
+      if (tollCost > 0 || otherCost > 0) {
         await Expense.create(
           [
             {
               trip: trip._id,
               vehicle: vehicle._id,
-              toll: tollVal,
-              other: otherVal,
+              toll: tollCost,
+              other: otherCost,
               maintenanceCost: 0,
               date: new Date(),
               description: `Trip ${trip.tripId} expenses`,

@@ -49,10 +49,12 @@ const tripSchema = new Schema<ITrip>(
     cargoWeight: {
       type: Number,
       required: true,
+      min: 0,
     },
     plannedDistance: {
       type: Number,
       required: true,
+      min: 0,
     },
     status: {
       type: String,
@@ -65,12 +67,15 @@ const tripSchema = new Schema<ITrip>(
     },
     endOdometer: {
       type: Number,
+      min: 0,
     },
     fuelConsumed: {
       type: Number,
+      min: 0,
     },
     durationMinutes: {
       type: Number,
+      min: 0,
     },
   },
   {

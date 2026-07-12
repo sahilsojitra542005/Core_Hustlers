@@ -28,16 +28,19 @@ const expenseSchema = new Schema<IExpense>(
       type: Number,
       required: true,
       default: 0,
+      min: 0,
     },
     other: {
       type: Number,
       required: true,
       default: 0,
+      min: 0,
     },
     maintenanceCost: {
       type: Number,
       required: true,
       default: 0,
+      min: 0,
     },
     date: {
       type: Date,

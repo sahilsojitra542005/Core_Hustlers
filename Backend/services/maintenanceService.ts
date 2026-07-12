@@ -3,6 +3,10 @@ import MaintenanceLog from "../models/MaintenanceLog.js";
 import Vehicle from "../models/Vehicle.js";
 import Expense from "../models/Expense.js";
 import HttpError from "../utils/HttpError.js";
+import {
+  optionalNonNegativeNumber,
+  requireNonNegativeNumber,
+} from "../utils/validation.js";
 
 export const listMaintenanceLogs = async () => {
   return MaintenanceLog.find().populate("vehicle").sort({ createdAt: -1 });
@@ -16,6 +20,7 @@ export const createMaintenanceLog = async (payload: {
   description?: string;
   status?: "Active" | "Closed";
 }) => {
+  const cost = requireNonNegativeNumber(payload.cost, "cost");
   const session = await mongoose.startSession();
 
   try {
@@ -34,7 +39,7 @@ export const createMaintenanceLog = async (payload: {
           {
             vehicle: payload.vehicleId,
             maintenanceType: payload.maintenanceType,
-            cost: payload.cost,
+            cost,
             startDate: payload.startDate || new Date(),
             status: logStatus,
             description: payload.description,
@@ -56,8 +61,8 @@ export const createMaintenanceLog = async (payload: {
         await Expense.create(
           [
             {
-              vehicle: vehicle._id,
-              maintenanceCost: payload.cost,
+                vehicle: vehicle._id,
+                maintenanceCost: cost,
               toll: 0,
               other: 0,
               date: new Date(),
@@ -85,6 +90,7 @@ export const updateMaintenanceLog = async (
     description?: string;
   }
 ) => {
+  const cost = optionalNonNegativeNumber(payload.cost, "cost");
   const session = await mongoose.startSession();
 
   try {
@@ -104,7 +110,7 @@ export const updateMaintenanceLog = async (
       const oldStatus = log.status;
       const newStatus = payload.status || log.status;
 
-      if (payload.cost !== undefined) log.cost = payload.cost;
+      if (cost !== undefined) log.cost = cost;
       if (payload.maintenanceType !== undefined) log.maintenanceType = payload.maintenanceType;
       if (payload.description !== undefined) log.description = payload.description;
       if (payload.endDate !== undefined) log.endDate = payload.endDate;

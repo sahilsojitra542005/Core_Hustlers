@@ -19,10 +19,12 @@ const fuelLogSchema = new Schema<IFuelLog>(
     liters: {
       type: Number,
       required: true,
+      min: 0,
     },
     cost: {
       type: Number,
       required: true,
+      min: 0,
     },
     date: {
       type: Date,

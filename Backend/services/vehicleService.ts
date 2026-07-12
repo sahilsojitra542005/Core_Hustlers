@@ -1,5 +1,9 @@
 import Vehicle from "../models/Vehicle.js";
 import HttpError from "../utils/HttpError.js";
+import {
+  optionalNonNegativeNumber,
+  requireNonNegativeNumber,
+} from "../utils/validation.js";
 
 type VehicleType = "Van" | "Truck" | "Mini";
 type VehicleStatus = "Available" | "On Trip" | "In Shop" | "Retired";
@@ -53,6 +57,12 @@ export const createVehicle = async (payload: {
   region?: string;
 }) => {
   const normalizedReg = payload.regNumber.toUpperCase().trim();
+  const capacity = requireNonNegativeNumber(payload.capacity, "capacity");
+  const odometer = requireNonNegativeNumber(payload.odometer, "odometer");
+  const acquisitionCost = requireNonNegativeNumber(
+    payload.acquisitionCost,
+    "acquisitionCost"
+  );
   const existingVehicle = await Vehicle.findOne({ regNumber: normalizedReg });
 
   if (existingVehicle) {
@@ -63,9 +73,9 @@ export const createVehicle = async (payload: {
     regNumber: normalizedReg,
     modelName: payload.modelName,
     type: payload.type,
-    capacity: payload.capacity,
-    odometer: payload.odometer,
-    acquisitionCost: payload.acquisitionCost,
+    capacity,
+    odometer,
+    acquisitionCost,
     region: payload.region,
   });
 };
@@ -101,9 +111,15 @@ export const updateVehicle = async (
 
   if (payload.modelName !== undefined) vehicle.modelName = payload.modelName;
   if (payload.type !== undefined) vehicle.type = payload.type;
-  if (payload.capacity !== undefined) vehicle.capacity = payload.capacity;
-  if (payload.odometer !== undefined) vehicle.odometer = payload.odometer;
-  if (payload.acquisitionCost !== undefined) vehicle.acquisitionCost = payload.acquisitionCost;
+  const capacity = optionalNonNegativeNumber(payload.capacity, "capacity");
+  const odometer = optionalNonNegativeNumber(payload.odometer, "odometer");
+  const acquisitionCost = optionalNonNegativeNumber(
+    payload.acquisitionCost,
+    "acquisitionCost"
+  );
+  if (capacity !== undefined) vehicle.capacity = capacity;
+  if (odometer !== undefined) vehicle.odometer = odometer;
+  if (acquisitionCost !== undefined) vehicle.acquisitionCost = acquisitionCost;
   if (payload.status !== undefined) vehicle.status = payload.status;
   if (payload.region !== undefined) vehicle.region = payload.region;
 

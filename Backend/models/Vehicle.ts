@@ -35,15 +35,18 @@ const vehicleSchema = new Schema<IVehicle>(
     capacity: {
       type: Number,
       required: true, // in kg
+      min: 0,
     },
     odometer: {
       type: Number,
       required: true,
       default: 0,
+      min: 0,
     },
     acquisitionCost: {
       type: Number,
       required: true,
+      min: 0,
     },
     status: {
       type: String,

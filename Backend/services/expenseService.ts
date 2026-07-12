@@ -2,6 +2,10 @@ import FuelLog from "../models/FuelLog.js";
 import Expense from "../models/Expense.js";
 import Vehicle from "../models/Vehicle.js";
 import HttpError from "../utils/HttpError.js";
+import {
+  optionalNonNegativeNumber,
+  requireNonNegativeNumber,
+} from "../utils/validation.js";
 
 export const listFuelLogs = async () => {
   return FuelLog.find().populate("vehicle").sort({ date: -1 });
@@ -13,6 +17,8 @@ export const createFuelLog = async (payload: {
   cost: number;
   date?: Date;
 }) => {
+  const liters = requireNonNegativeNumber(payload.liters, "liters");
+  const cost = requireNonNegativeNumber(payload.cost, "cost");
   const vehicle = await Vehicle.findById(payload.vehicleId);
   if (!vehicle) {
     throw new HttpError(404, "Vehicle not found");
@@ -20,8 +26,8 @@ export const createFuelLog = async (payload: {
 
   return FuelLog.create({
     vehicle: payload.vehicleId,
-    liters: payload.liters,
-    cost: payload.cost,
+    liters,
+    cost,
     date: payload.date || new Date(),
   });
 };
@@ -38,6 +44,8 @@ export const createOtherExpense = async (payload: {
   date?: Date;
   description?: string;
 }) => {
+  const toll = optionalNonNegativeNumber(payload.toll, "toll") || 0;
+  const other = optionalNonNegativeNumber(payload.other, "other") || 0;
   const vehicle = await Vehicle.findById(payload.vehicleId);
   if (!vehicle) {
     throw new HttpError(404, "Vehicle not found");
@@ -46,8 +54,8 @@ export const createOtherExpense = async (payload: {
   return Expense.create({
     trip: payload.tripId || undefined,
     vehicle: payload.vehicleId,
-    toll: payload.toll || 0,
-    other: payload.other || 0,
+    toll,
+    other,
     maintenanceCost: 0,
     date: payload.date || new Date(),
     description: payload.description,

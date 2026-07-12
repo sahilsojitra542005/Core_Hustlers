@@ -27,6 +27,7 @@ const maintenanceLogSchema = new Schema<IMaintenanceLog>(
     cost: {
       type: Number,
       required: true,
+      min: 0,
     },
     startDate: {
       type: Date,
