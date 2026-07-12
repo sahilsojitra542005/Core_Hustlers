@@ -20,6 +20,7 @@ export const updateSettings = async (payload: {
   depotName?: string;
   currency?: string;
   distanceUnit?: string;
+  routeRoles?: Record<string, string[]>;
 }) => {
   let setting = await Setting.findOne();
 
@@ -30,6 +31,7 @@ export const updateSettings = async (payload: {
   if (payload.depotName !== undefined) setting.depotName = payload.depotName;
   if (payload.currency !== undefined) setting.currency = payload.currency;
   if (payload.distanceUnit !== undefined) setting.distanceUnit = payload.distanceUnit;
+  if (payload.routeRoles !== undefined) setting.routeRoles = payload.routeRoles as any;
 
   return setting.save();
 };

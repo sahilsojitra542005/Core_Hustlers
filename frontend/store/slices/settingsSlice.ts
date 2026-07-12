@@ -6,6 +6,7 @@ export interface Settings {
   depotName: string;
   currency: string;
   distanceUnit: string;
+  routeRoles?: Record<string, string[]>;
 }
 
 interface SettingsState {
