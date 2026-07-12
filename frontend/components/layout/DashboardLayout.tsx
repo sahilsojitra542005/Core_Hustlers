@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 
 const ROUTE_ROLES: Record<string, string[]> = {
   "/dashboard": ["Dispatcher", "Financial Analyst", "Admin"],
-  "/settings": ["Fleet Manager", "Dispatcher", "Safety Officer", "Financial Analyst", "Admin"],
+  "/settings": ["Admin"],
   "/fleet": ["Fleet Manager", "Admin"],
   "/drivers": ["Safety Officer", "Admin"],
   "/trips": ["Dispatcher", "Admin"],
