@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -11,14 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 const ROUTE_ROLES: Record<string, string[]> = {
-  "/dashboard": ["Fleet Manager", "Dispatcher", "Safety Officer", "Financial Analyst", "Admin"],
+  "/dashboard": ["Dispatcher", "Financial Analyst", "Admin"],
   "/settings": ["Fleet Manager", "Dispatcher", "Safety Officer", "Financial Analyst", "Admin"],
-  "/fleet": ["Fleet Manager", "Dispatcher", "Financial Analyst", "Admin"],
-  "/drivers": ["Fleet Manager", "Safety Officer", "Admin"],
-  "/trips": ["Fleet Manager", "Dispatcher", "Safety Officer", "Admin"],
-  "/maintenance": ["Fleet Manager", "Dispatcher", "Financial Analyst", "Admin"],
-  "/fuel-expenses": ["Fleet Manager", "Financial Analyst", "Admin"],
-  "/analytics": ["Fleet Manager", "Financial Analyst", "Admin"],
+  "/fleet": ["Fleet Manager", "Admin"],
+  "/drivers": ["Safety Officer", "Admin"],
+  "/trips": ["Dispatcher", "Admin"],
+  "/maintenance": ["Fleet Manager", "Admin"],
+  "/fuel-expenses": ["Financial Analyst", "Admin"],
+  "/analytics": ["Financial Analyst", "Admin"],
 };
 
 export default function DashboardLayout({
@@ -29,8 +29,15 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector((state) => state.auth);
+  const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    // If not authenticated, redirect to login page
+    if (!isAuthenticated && !user) {
+      router.push("/");
+    }
+  }, [isAuthenticated, user, router]);
 
   const navItems = [
     { name: "Dashboard", href: "/dashboard" },
@@ -186,8 +193,20 @@ export default function DashboardLayout({
               <p className="text-muted-foreground max-w-md text-lg">
                 Your role <span className="font-semibold text-primary">{userRole}</span> does not have permission to view this page.
               </p>
-              <Button onClick={() => router.push("/dashboard")} className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground">
-                Return to Dashboard
+              <Button 
+                onClick={() => {
+                  const DEFAULT_ROUTE_FOR_ROLE: Record<string, string> = {
+                    "Fleet Manager": "/fleet",
+                    "Dispatcher": "/dashboard",
+                    "Safety Officer": "/drivers",
+                    "Financial Analyst": "/dashboard",
+                    "Admin": "/dashboard"
+                  };
+                  router.push(DEFAULT_ROUTE_FOR_ROLE[userRole] || "/settings");
+                }} 
+                className="mt-8 bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                Return Home
               </Button>
             </div>
           ) : (

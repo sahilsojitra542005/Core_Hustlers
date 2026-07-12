@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,18 +14,35 @@ import { LayoutGrid, X, Loader2, ArrowRight } from "lucide-react";
 export default function LoginPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { error: reduxError, loading } = useAppSelector((state) => state.auth);
+  const { isAuthenticated, error: reduxError, loading } = useAppSelector((state) => state.auth);
   
   const [email, setEmail] = useState("manager@transitops.com");
   const [password, setPassword] = useState("securepassword123");
   const [role, setRole] = useState("Fleet Manager");
+
+  const DEFAULT_ROUTE_FOR_ROLE: Record<string, string> = {
+    "Fleet Manager": "/fleet",
+    "Dispatcher": "/dashboard",
+    "Safety Officer": "/drivers",
+    "Financial Analyst": "/dashboard",
+    "Admin": "/dashboard"
+  };
+
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    if (isAuthenticated) {
+      const targetRoute = DEFAULT_ROUTE_FOR_ROLE[role] || "/settings";
+      router.push(targetRoute);
+    }
+  }, [isAuthenticated, router, role]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     dispatch(clearError());
     const resultAction = await dispatch(loginUser({ email, password, role }));
     if (loginUser.fulfilled.match(resultAction)) {
-      router.push("/dashboard");
+      const targetRoute = DEFAULT_ROUTE_FOR_ROLE[role] || "/settings";
+      router.push(targetRoute);
     }
   };
 

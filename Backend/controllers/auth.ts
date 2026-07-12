@@ -1,19 +1,7 @@
 import { Request, Response } from "express";
 import { AuthRequest } from "../middleware/auth.js";
-import { getUserProfile, loginUser, registerUser } from "../services/authService.js";
+import { getUserProfile, loginUser } from "../services/authService.js";
 import { handleRouteError } from "../utils/routeErrorHandler.js";
-
-// @desc    Register a new user
-// @route   POST /api/auth/register
-// @access  Public
-export const register = async (req: Request, res: Response): Promise<void | Response> => {
-  try {
-    const user = await registerUser(req.body);
-    return res.status(201).json(user);
-  } catch (error: any) {
-    return handleRouteError(error, res);
-  }
-};
 
 // @desc    Auth user & get token
 // @route   POST /api/auth/login
