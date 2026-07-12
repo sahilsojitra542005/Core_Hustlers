@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Search } from "lucide-react";
-import { useAppSelector } from "@/store/hooks";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { logout } from "@/store/slices/authSlice";
 import { Input } from "@/components/ui/input";
 
 export default function DashboardLayout({
@@ -13,6 +14,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
 
   const navItems = [
@@ -21,7 +24,7 @@ export default function DashboardLayout({
     { name: "Drivers", href: "/drivers" },
     { name: "Trips", href: "/trips" },
     { name: "Maintenance", href: "/maintenance" },
-    { name: "Fuel & Expenses", href: "/fuel" },
+    { name: "Fuel & Expenses", href: "/fuel-expenses" },
     { name: "Analytics", href: "/analytics" },
     { name: "Settings", href: "/settings" },
   ];
@@ -74,14 +77,23 @@ export default function DashboardLayout({
             {user && (
               <div className="flex items-center gap-3">
                 <span className="text-sm text-muted-foreground hidden sm:inline-block">
-                  {user.name}
+                  {user.email.split('@')[0]}
                 </span>
                 <div className="flex items-center gap-2 border border-border rounded-full pl-3 pr-1 py-1 text-sm bg-secondary/30">
                   <span className="text-primary">{user.role}</span>
-                  <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-primary font-medium text-xs">
-                    {user.name.split(' ').map(n => n[0]).join('')}
+                  <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-primary font-medium text-xs uppercase">
+                    {user.email[0]}
                   </div>
                 </div>
+                <button
+                  onClick={() => {
+                    dispatch(logout());
+                    router.push("/");
+                  }}
+                  className="ml-2 text-sm text-muted-foreground hover:text-white transition-colors"
+                >
+                  Log out
+                </button>
               </div>
             )}
           </div>

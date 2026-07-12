@@ -1,13 +1,20 @@
 "use client";
 
-import { useAppSelector } from "@/store/hooks";
+import { useEffect } from "react";
+import { useAppSelector, useAppDispatch } from "@/store/hooks";
+import { fetchVehicles } from "@/store/slices/fleetSlice";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 
 export default function VehicleRegistryPage() {
-  const { vehicles } = useAppSelector((state) => state.fleet);
+  const dispatch = useAppDispatch();
+  const { vehicles, loading } = useAppSelector((state) => state.fleet);
+
+  useEffect(() => {
+    dispatch(fetchVehicles());
+  }, [dispatch]);
 
   return (
     <div className="space-y-6">
@@ -19,9 +26,9 @@ export default function VehicleRegistryPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Type: All</SelectItem>
-              <SelectItem value="van">Van</SelectItem>
-              <SelectItem value="truck">Truck</SelectItem>
-              <SelectItem value="mini">Mini</SelectItem>
+              <SelectItem value="Van">Van</SelectItem>
+              <SelectItem value="Truck">Truck</SelectItem>
+              <SelectItem value="Mini">Mini</SelectItem>
             </SelectContent>
           </Select>
           <Select defaultValue="all">
@@ -30,10 +37,10 @@ export default function VehicleRegistryPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Status: All</SelectItem>
-              <SelectItem value="available">Available</SelectItem>
-              <SelectItem value="on_trip">On Trip</SelectItem>
-              <SelectItem value="in_shop">In Shop</SelectItem>
-              <SelectItem value="retired">Retired</SelectItem>
+              <SelectItem value="Available">Available</SelectItem>
+              <SelectItem value="On Trip">On Trip</SelectItem>
+              <SelectItem value="In Shop">In Shop</SelectItem>
+              <SelectItem value="Retired">Retired</SelectItem>
             </SelectContent>
           </Select>
           <Input
@@ -54,21 +61,29 @@ export default function VehicleRegistryPage() {
               <th className="px-6 py-4 font-medium">REG. NO. (UNIQUE)</th>
               <th className="px-6 py-4 font-medium">NAME/MODEL</th>
               <th className="px-6 py-4 font-medium">TYPE</th>
-              <th className="px-6 py-4 font-medium">CAPACITY</th>
+              <th className="px-6 py-4 font-medium">CAPACITY (kg)</th>
               <th className="px-6 py-4 font-medium">ODOMETER</th>
               <th className="px-6 py-4 font-medium">ACQ. COST</th>
               <th className="px-6 py-4 font-medium">STATUS</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {vehicles.map((v, i) => (
-              <tr key={i} className="hover:bg-secondary/20 transition-colors">
-                <td className="px-6 py-4 font-mono">{v.regNo}</td>
-                <td className="px-6 py-4">{v.name}</td>
+            {loading ? (
+              <tr>
+                <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">Loading vehicles...</td>
+              </tr>
+            ) : vehicles.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">No vehicles found.</td>
+              </tr>
+            ) : vehicles.map((v) => (
+              <tr key={v._id} className="hover:bg-secondary/20 transition-colors">
+                <td className="px-6 py-4 font-mono">{v.regNumber}</td>
+                <td className="px-6 py-4">{v.modelName}</td>
                 <td className="px-6 py-4">{v.type}</td>
                 <td className="px-6 py-4">{v.capacity}</td>
-                <td className="px-6 py-4">{v.odometer}</td>
-                <td className="px-6 py-4">{v.acqCost}</td>
+                <td className="px-6 py-4">{v.odometer?.toLocaleString()}</td>
+                <td className="px-6 py-4">{v.acquisitionCost?.toLocaleString()}</td>
                 <td className="px-6 py-4">
                   <span className={`px-3 py-1.5 rounded-md text-xs font-medium text-black ${
                     v.status === 'Available' ? 'bg-green-500' :
