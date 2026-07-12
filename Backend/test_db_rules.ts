@@ -280,7 +280,7 @@ const runTests = async () => {
       date: maint.endDate,
     });
 
-    if (maintVan && maintVan.status !== "Retired") {
+    if (maintVan) {
       maintVan.status = "Available";
       await maintVan.save();
     }
