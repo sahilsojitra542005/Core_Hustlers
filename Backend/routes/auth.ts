@@ -37,7 +37,7 @@ router.post("/register", async (req: Request, res: Response): Promise<void | Res
       _id: user._id,
       email: user.email,
       role: user.role,
-      token: generateToken(user._id as string),
+      token: generateToken(user._id.toString()),
     });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
@@ -77,7 +77,7 @@ router.post("/login", async (req: Request, res: Response): Promise<void | Respon
         _id: user._id,
         email: user.email,
         role: user.role,
-        token: generateToken(user._id as string),
+        token: generateToken(user._id.toString()),
       });
     } else {
       // Increment failed login attempts
