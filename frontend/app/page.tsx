@@ -13,26 +13,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAppDispatch } from "@/store/hooks";
-import { login } from "@/store/slices/authSlice";
-import { LayoutGrid, X } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { loginUser, clearError } from "@/store/slices/authSlice";
+import { LayoutGrid, X, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const [email, setEmail] = useState("raven.k@transitops.in");
-  const [password, setPassword] = useState("********");
-  const [role, setRole] = useState("Dispatcher");
-  const [error, setError] = useState(false);
+  const { error: reduxError, loading } = useAppSelector((state) => state.auth);
+  
+  const [email, setEmail] = useState("manager@transitops.com");
+  const [password, setPassword] = useState("securepassword123");
 
-  const handleSignIn = (e: React.FormEvent) => {
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email === "error@transitops.in") {
-      setError(true);
-      return;
+    dispatch(clearError());
+    const resultAction = await dispatch(loginUser({ email, password }));
+    if (loginUser.fulfilled.match(resultAction)) {
+      router.push("/dashboard");
     }
-    dispatch(login({ email, role, name: "Raven K." }));
-    router.push("/dashboard");
   };
 
   return (
@@ -106,21 +105,6 @@ export default function LoginPage() {
               />
             </div>
 
-            <div className="space-y-2 relative">
-              <Label htmlFor="role" className="text-xs text-gray-400 font-semibold tracking-wider">ROLE (RBAC)</Label>
-              <Select value={role} onValueChange={setRole}>
-                <SelectTrigger className="bg-transparent border-gray-700 h-11 focus:ring-primary/50 rounded-lg text-white w-full">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#18181b] border-gray-700 text-white">
-                  <SelectItem value="Fleet Manager">Fleet Manager</SelectItem>
-                  <SelectItem value="Dispatcher">Dispatcher</SelectItem>
-                  <SelectItem value="Safety Officer">Safety Officer</SelectItem>
-                  <SelectItem value="Financial Analyst">Financial Analyst</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Checkbox id="remember" className="border-gray-500 data-[state=checked]:bg-primary data-[state=checked]:border-primary" />
@@ -136,7 +120,8 @@ export default function LoginPage() {
               </a>
             </div>
 
-            <Button type="submit" className="w-full bg-[#c2843b] hover:bg-[#b4752c] text-white h-11 rounded-lg font-medium">
+            <Button disabled={loading} type="submit" className="w-full bg-[#c2843b] hover:bg-[#b4752c] text-white h-11 rounded-lg font-medium">
+              {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Sign In
             </Button>
           </form>
@@ -152,14 +137,13 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Error State Mock */}
-        {error && (
+        {reduxError && (
           <div className="absolute right-8 top-1/4 max-w-xs p-4 rounded-xl border border-dashed border-red-500/50 bg-red-950/20 text-red-200 text-sm">
             <div className="flex gap-2">
               <X size={16} className="text-red-500 shrink-0 mt-0.5" />
               <div>
-                <div className="font-semibold text-red-400 mb-1">Error state</div>
-                Invalid credentials.<br/>Account locked after 5 failed attempts.
+                <div className="font-semibold text-red-400 mb-1">Login Error</div>
+                {reduxError}
               </div>
             </div>
           </div>

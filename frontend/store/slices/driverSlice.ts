@@ -1,33 +1,111 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import api from '@/lib/api';
 
 export interface Driver {
+  _id: string;
   name: string;
-  licenseNo: string;
-  category: string;
-  expiry: string;
-  contact: string;
-  tripCompl: string;
-  safety: 'Available' | 'Suspended' | 'On Trip';
-  status: 'Available' | 'Suspended' | 'On Trip' | 'Off Duty';
+  licenseNumber: string;
+  licenseCategory: string;
+  licenseExpiryDate: string;
+  contactNumber: string;
+  safetyScore: number;
+  tripCompletionRate: number;
+  status: 'Available' | 'On Trip' | 'Off Duty' | 'Suspended';
 }
 
 interface DriverState {
   drivers: Driver[];
+  eligibleDrivers: Driver[];
+  loading: boolean;
+  error: string | null;
 }
 
 const initialState: DriverState = {
-  drivers: [
-    { name: 'Alex', licenseNo: 'DL-88213', category: 'LMV', expiry: '12/2028', contact: '98765xxxx', tripCompl: '96%', safety: 'Available', status: 'Available' },
-    { name: 'John', licenseNo: 'DL-44120', category: 'HMV', expiry: '03/2025 EXPIRE', contact: '98220xxxx', tripCompl: '81%', safety: 'Suspended', status: 'Suspended' },
-    { name: 'Priya', licenseNo: 'DL-77031', category: 'LMV', expiry: '08/2028', contact: '99110xxxx', tripCompl: '99%', safety: 'On Trip', status: 'On Trip' },
-    { name: 'Suresh', licenseNo: 'DL-90045', category: 'HMV', expiry: '01/2027', contact: '97440xxxx', tripCompl: '88%', safety: 'Available', status: 'Off Duty' },
-  ],
+  drivers: [],
+  eligibleDrivers: [],
+  loading: false,
+  error: null,
 };
+
+export const fetchDrivers = createAsyncThunk(
+  'driver/fetchDrivers',
+  async (params?: { status?: string; search?: string }) => {
+    const response = await api.get('/api/drivers', { params });
+    return response.data as Driver[];
+  }
+);
+
+export const fetchEligibleDrivers = createAsyncThunk(
+  'driver/fetchEligibleDrivers',
+  async () => {
+    const response = await api.get('/api/drivers/dispatch-selection');
+    return response.data as Driver[];
+  }
+);
+
+export const createDriver = createAsyncThunk(
+  'driver/createDriver',
+  async (driverData: Partial<Driver>) => {
+    const response = await api.post('/api/drivers', driverData);
+    return response.data as Driver;
+  }
+);
+
+export const updateDriver = createAsyncThunk(
+  'driver/updateDriver',
+  async ({ id, data }: { id: string; data: Partial<Driver> }) => {
+    const response = await api.put(`/api/drivers/${id}`, data);
+    return response.data as Driver;
+  }
+);
+
+export const deleteDriver = createAsyncThunk(
+  'driver/deleteDriver',
+  async (id: string) => {
+    await api.delete(`/api/drivers/${id}`);
+    return id;
+  }
+);
 
 export const driverSlice = createSlice({
   name: 'driver',
   initialState,
   reducers: {},
+  extraReducers: (builder) => {
+    builder
+      // fetchDrivers
+      .addCase(fetchDrivers.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchDrivers.fulfilled, (state, action) => {
+        state.loading = false;
+        state.drivers = action.payload;
+      })
+      .addCase(fetchDrivers.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || 'Failed to fetch drivers';
+      })
+      // fetchEligibleDrivers
+      .addCase(fetchEligibleDrivers.fulfilled, (state, action) => {
+        state.eligibleDrivers = action.payload;
+      })
+      // createDriver
+      .addCase(createDriver.fulfilled, (state, action) => {
+        state.drivers.push(action.payload);
+      })
+      // updateDriver
+      .addCase(updateDriver.fulfilled, (state, action) => {
+        const index = state.drivers.findIndex(d => d._id === action.payload._id);
+        if (index !== -1) {
+          state.drivers[index] = action.payload;
+        }
+      })
+      // deleteDriver
+      .addCase(deleteDriver.fulfilled, (state, action) => {
+        state.drivers = state.drivers.filter(d => d._id !== action.payload);
+      });
+  },
 });
 
 export default driverSlice.reducer;
