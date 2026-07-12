@@ -1,6 +1,14 @@
 import express, { Response } from "express";
-import Vehicle from "../models/Vehicle.js";
 import { protect, authorize, AuthRequest } from "../middleware/auth.js";
+import {
+  createVehicle,
+  deleteVehicle,
+  getVehicleById,
+  listDispatchVehicles,
+  listVehicles,
+  updateVehicle,
+} from "../services/vehicleService.js";
+import { handleRouteError } from "../utils/routeErrorHandler.js";
 
 const router = express.Router();
 
@@ -12,36 +20,17 @@ router.get(
   protect,
   authorize("Fleet Manager", "Dispatcher", "Financial Analyst"),
   async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    const { type, status, region, search } = req.query as {
-      type?: string;
-      status?: string;
-      region?: string;
-      search?: string;
-    };
-
-    const query: any = {};
-
-    if (type && type !== "All") {
-      query.type = type;
-    }
-    if (status && status !== "All") {
-      query.status = status;
-    }
-    if (region && region !== "All") {
-      query.region = region;
-    }
-    if (search) {
-      query.$or = [
-        { regNumber: { $regex: search, $options: "i" } },
-        { modelName: { $regex: search, $options: "i" } },
-      ];
-    }
-
     try {
-      const vehicles = await Vehicle.find(query).sort({ createdAt: -1 });
+      const { type, status, region, search } = req.query as {
+        type?: string;
+        status?: string;
+        region?: string;
+        search?: string;
+      };
+      const vehicles = await listVehicles({ type, status, region, search });
       return res.json(vehicles);
     } catch (error: any) {
-      return res.status(500).json({ message: error.message });
+      return handleRouteError(error, res);
     }
   }
 );
@@ -55,12 +44,10 @@ router.get(
   authorize("Dispatcher", "Fleet Manager"),
   async (req: AuthRequest, res: Response): Promise<void | Response> => {
     try {
-      const vehicles = await Vehicle.find({ status: "Available" }).sort({
-        modelName: 1,
-      });
+      const vehicles = await listDispatchVehicles();
       return res.json(vehicles);
     } catch (error: any) {
-      return res.status(500).json({ message: error.message });
+      return handleRouteError(error, res);
     }
   }
 );
@@ -74,13 +61,10 @@ router.get(
   authorize("Fleet Manager", "Dispatcher", "Financial Analyst"),
   async (req: AuthRequest, res: Response): Promise<void | Response> => {
     try {
-      const vehicle = await Vehicle.findById(req.params.id);
-      if (!vehicle) {
-        return res.status(404).json({ message: "Vehicle not found" });
-      }
+      const vehicle = await getVehicleById(String(req.params.id));
       return res.json(vehicle);
     } catch (error: any) {
-      return res.status(500).json({ message: error.message });
+      return handleRouteError(error, res);
     }
   }
 );
@@ -93,32 +77,11 @@ router.post(
   protect,
   authorize("Fleet Manager"),
   async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    const { regNumber, modelName, type, capacity, odometer, acquisitionCost, region } =
-      req.body;
-
     try {
-      const existingVehicle = await Vehicle.findOne({
-        regNumber: regNumber.toUpperCase().trim(),
-      });
-      if (existingVehicle) {
-        return res
-          .status(400)
-          .json({ message: "Registration number must be unique" });
-      }
-
-      const vehicle = await Vehicle.create({
-        regNumber: regNumber.toUpperCase().trim(),
-        modelName,
-        type,
-        capacity,
-        odometer,
-        acquisitionCost,
-        region,
-      });
-
+      const vehicle = await createVehicle(req.body);
       return res.status(201).json(vehicle);
     } catch (error: any) {
-      return res.status(500).json({ message: error.message });
+      return handleRouteError(error, res);
     }
   }
 );
@@ -132,39 +95,10 @@ router.put(
   authorize("Fleet Manager"),
   async (req: AuthRequest, res: Response): Promise<void | Response> => {
     try {
-      const vehicle = await Vehicle.findById(req.params.id);
-      if (!vehicle) {
-        return res.status(404).json({ message: "Vehicle not found" });
-      }
-
-      const { regNumber, modelName, type, capacity, odometer, acquisitionCost, status, region } =
-        req.body;
-
-      if (regNumber) {
-        const normalizedReg = regNumber.toUpperCase().trim();
-        if (normalizedReg !== vehicle.regNumber) {
-          const duplicate = await Vehicle.findOne({ regNumber: normalizedReg });
-          if (duplicate) {
-            return res
-              .status(400)
-              .json({ message: "Registration number must be unique" });
-          }
-          vehicle.regNumber = normalizedReg;
-        }
-      }
-
-      if (modelName !== undefined) vehicle.modelName = modelName;
-      if (type !== undefined) vehicle.type = type;
-      if (capacity !== undefined) vehicle.capacity = capacity;
-      if (odometer !== undefined) vehicle.odometer = odometer;
-      if (acquisitionCost !== undefined) vehicle.acquisitionCost = acquisitionCost;
-      if (status !== undefined) vehicle.status = status;
-      if (region !== undefined) vehicle.region = region;
-
-      const updatedVehicle = await vehicle.save();
-      return res.json(updatedVehicle);
+      const vehicle = await updateVehicle(String(req.params.id), req.body);
+      return res.json(vehicle);
     } catch (error: any) {
-      return res.status(500).json({ message: error.message });
+      return handleRouteError(error, res);
     }
   }
 );
@@ -178,14 +112,10 @@ router.delete(
   authorize("Fleet Manager"),
   async (req: AuthRequest, res: Response): Promise<void | Response> => {
     try {
-      const vehicle = await Vehicle.findById(req.params.id);
-      if (!vehicle) {
-        return res.status(404).json({ message: "Vehicle not found" });
-      }
-      await vehicle.deleteOne();
-      return res.json({ message: "Vehicle removed successfully" });
+      const result = await deleteVehicle(String(req.params.id));
+      return res.json(result);
     } catch (error: any) {
-      return res.status(500).json({ message: error.message });
+      return handleRouteError(error, res);
     }
   }
 );
