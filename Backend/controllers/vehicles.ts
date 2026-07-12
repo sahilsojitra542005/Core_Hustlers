@@ -3,6 +3,8 @@ import { AuthRequest } from "../middleware/auth.js";
 import {
   createVehicle,
   deleteVehicle,
+  getVehicleCostsCsv,
+  getVehicleCostsPdf,
   getVehicleById,
   listDispatchVehicles,
   listVehicles,
@@ -35,6 +37,34 @@ export const getDispatchVehicles = async (req: AuthRequest, res: Response): Prom
   try {
     const vehicles = await listDispatchVehicles();
     return res.json(vehicles);
+  } catch (error: any) {
+    return handleRouteError(error, res);
+  }
+};
+
+export const exportVehicleCostsCsv = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void | Response> => {
+  try {
+    const csv = await getVehicleCostsCsv();
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", 'attachment; filename="transitops-vehicle-costs.csv"');
+    return res.send(csv);
+  } catch (error: any) {
+    return handleRouteError(error, res);
+  }
+};
+
+export const exportVehicleCostsPdf = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void | Response> => {
+  try {
+    const pdf = await getVehicleCostsPdf();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", 'attachment; filename="transitops-vehicle-costs.pdf"');
+    return res.send(pdf);
   } catch (error: any) {
     return handleRouteError(error, res);
   }

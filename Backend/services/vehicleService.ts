@@ -1,9 +1,12 @@
 import Vehicle from "../models/Vehicle.js";
+import FuelLog from "../models/FuelLog.js";
+import Expense from "../models/Expense.js";
 import HttpError from "../utils/HttpError.js";
 import {
   optionalNonNegativeNumber,
   requireNonNegativeNumber,
 } from "../utils/validation.js";
+import { buildCsv, buildSimplePdf } from "../utils/exportUtils.js";
 
 type VehicleType = "Van" | "Truck" | "Mini";
 type VehicleStatus = "Available" | "On Trip" | "In Shop" | "Retired";
@@ -134,4 +137,88 @@ export const deleteVehicle = async (vehicleId: string) => {
 
   await vehicle.deleteOne();
   return { message: "Vehicle removed successfully" };
+};
+
+export const getVehicleCosts = async () => {
+  const vehicles = await Vehicle.find().sort({ modelName: 1 });
+
+  const rows = await Promise.all(
+    vehicles.map(async (vehicle) => {
+      const fuelResult = await FuelLog.aggregate([
+        { $match: { vehicle: vehicle._id } },
+        { $group: { _id: null, total: { $sum: "$cost" } } },
+      ]);
+      const expenseResult = await Expense.aggregate([
+        { $match: { vehicle: vehicle._id } },
+        {
+          $group: {
+            _id: null,
+            toll: { $sum: "$toll" },
+            other: { $sum: "$other" },
+            maintenance: { $sum: "$maintenanceCost" },
+          },
+        },
+      ]);
+
+      const fuelCost = fuelResult[0]?.total || 0;
+      const tollCost = expenseResult[0]?.toll || 0;
+      const otherCost = expenseResult[0]?.other || 0;
+      const maintenanceCost = expenseResult[0]?.maintenance || 0;
+
+      return {
+        modelName: vehicle.modelName,
+        regNumber: vehicle.regNumber,
+        type: vehicle.type,
+        status: vehicle.status,
+        acquisitionCost: vehicle.acquisitionCost,
+        fuelCost,
+        tollCost,
+        otherCost,
+        maintenanceCost,
+        totalCost: fuelCost + tollCost + otherCost + maintenanceCost,
+      };
+    })
+  );
+
+  return rows;
+};
+
+export const getVehicleCostsCsv = async () => {
+  const rows = await getVehicleCosts();
+
+  return buildCsv(
+    [
+      "Vehicle",
+      "Registration",
+      "Type",
+      "Status",
+      "Acquisition Cost",
+      "Fuel Cost",
+      "Toll Cost",
+      "Other Cost",
+      "Maintenance Cost",
+      "Total Cost",
+    ],
+    rows.map((vehicle) => [
+      vehicle.modelName,
+      vehicle.regNumber,
+      vehicle.type,
+      vehicle.status,
+      vehicle.acquisitionCost,
+      vehicle.fuelCost,
+      vehicle.tollCost,
+      vehicle.otherCost,
+      vehicle.maintenanceCost,
+      vehicle.totalCost,
+    ])
+  );
+};
+
+export const getVehicleCostsPdf = async () => {
+  const rows = await getVehicleCosts();
+  const lines = rows.slice(0, 35).map((vehicle) => {
+    return `${vehicle.modelName} (${vehicle.regNumber}) | ${vehicle.status} | Total Cost: ${vehicle.totalCost}`;
+  });
+
+  return buildSimplePdf("TransitOps Vehicle Cost Export", lines);
 };

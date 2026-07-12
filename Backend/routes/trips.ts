@@ -3,6 +3,8 @@ import { protect, authorize } from "../middleware/auth.js";
 import {
   getTrips,
   getTrip,
+  exportTripsCsv,
+  exportTripsPdf,
   createTripDraft,
   dispatchTripHandler,
   completeTripHandler,
@@ -19,6 +21,20 @@ router.get(
   protect,
   authorize("Dispatcher"),
   getTrips
+);
+
+router.get(
+  "/export.csv",
+  protect,
+  authorize("Dispatcher", "Fleet Manager", "Financial Analyst"),
+  exportTripsCsv
+);
+
+router.get(
+  "/export.pdf",
+  protect,
+  authorize("Dispatcher", "Fleet Manager", "Financial Analyst"),
+  exportTripsPdf
 );
 
 // @desc    Get single trip by ID

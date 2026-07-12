@@ -5,6 +5,8 @@ import {
   completeTrip,
   createTrip,
   dispatchTrip,
+  getTripsCsv,
+  getTripsPdf,
   getTripById,
   listTrips,
 } from "../services/tripService.js";
@@ -18,6 +20,34 @@ export const getTrips = async (req: AuthRequest, res: Response): Promise<void | 
     const { status, search } = req.query as { status?: string; search?: string };
     const trips = await listTrips({ status, search });
     return res.json(trips);
+  } catch (error: any) {
+    return handleRouteError(error, res);
+  }
+};
+
+export const exportTripsCsv = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void | Response> => {
+  try {
+    const csv = await getTripsCsv();
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", 'attachment; filename="transitops-trips.csv"');
+    return res.send(csv);
+  } catch (error: any) {
+    return handleRouteError(error, res);
+  }
+};
+
+export const exportTripsPdf = async (
+  req: AuthRequest,
+  res: Response
+): Promise<void | Response> => {
+  try {
+    const pdf = await getTripsPdf();
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", 'attachment; filename="transitops-trips.pdf"');
+    return res.send(pdf);
   } catch (error: any) {
     return handleRouteError(error, res);
   }

@@ -4,6 +4,8 @@ import {
   getVehicles,
   getDispatchVehicles,
   getVehicle,
+  exportVehicleCostsCsv,
+  exportVehicleCostsPdf,
   createNewVehicle,
   updateVehicleDetails,
   deleteVehicleProfile,
@@ -29,6 +31,20 @@ router.get(
   protect,
   authorize("Dispatcher", "Fleet Manager"),
   getDispatchVehicles
+);
+
+router.get(
+  "/costs/export.csv",
+  protect,
+  authorize("Fleet Manager", "Financial Analyst"),
+  exportVehicleCostsCsv
+);
+
+router.get(
+  "/costs/export.pdf",
+  protect,
+  authorize("Fleet Manager", "Financial Analyst"),
+  exportVehicleCostsPdf
 );
 
 // @desc    Get single vehicle by ID

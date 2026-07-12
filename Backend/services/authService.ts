@@ -17,7 +17,7 @@ const serializeUser = (user: IUser) => ({
   token: generateToken(user._id.toString()),
 });
 
-export const loginUser = async (payload: { email: string; password: string; role: string }) => {
+export const loginUser = async (payload: { email: string; password: string; role: IUser["role"] }) => {
   let user = await User.findOne({ email: payload.email });
 
   if (!user) {

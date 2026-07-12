@@ -1,13 +1,18 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Download, FileText } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { fetchReportsAnalytics } from "@/store/slices/analyticsSlice";
+import api from "@/lib/api";
 
 export default function AnalyticsPage() {
   const dispatch = useAppDispatch();
   const { reports, loading } = useAppSelector((state) => state.analytics);
+  const [exporting, setExporting] = useState<string | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   useEffect(() => {
     dispatch(fetchReportsAnalytics());
@@ -39,12 +44,102 @@ export default function AnalyticsPage() {
     color: colors[i % colors.length]
   }));
 
+  const downloadExport = async (endpoint: string, filename: string) => {
+    try {
+      setExportError(null);
+      setExporting(filename);
+      const response = await api.get(endpoint, { responseType: "blob" });
+      const contentType = String(response.headers["content-type"] || "application/octet-stream");
+      const blob = new Blob([response.data], {
+        type: contentType,
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      setExportError("Export failed. Please check your role permissions and try again.");
+    } finally {
+      setExporting(null);
+    }
+  };
+
   return (
     <div className="space-y-8">
       {loading ? (
         <div className="text-sm text-muted-foreground animate-pulse p-4 rounded-lg bg-card/50 border border-border/50">Loading analytics...</div>
       ) : (
         <>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border/50 bg-card/30 p-4">
+            <div>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Exports</h2>
+              <p className="text-xs text-muted-foreground mt-1">Download analytics, trip, and vehicle cost reports.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!!exporting}
+                onClick={() => downloadExport("/api/analytics/reports/export.csv", "transitops-reports.csv")}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Reports CSV
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!!exporting}
+                onClick={() => downloadExport("/api/analytics/reports/export.pdf", "transitops-reports.pdf")}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Reports PDF
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!!exporting}
+                onClick={() => downloadExport("/api/trips/export.csv", "transitops-trips.csv")}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Trips CSV
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!!exporting}
+                onClick={() => downloadExport("/api/trips/export.pdf", "transitops-trips.pdf")}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Trips PDF
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!!exporting}
+                onClick={() => downloadExport("/api/vehicles/costs/export.csv", "transitops-vehicle-costs.csv")}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Costs CSV
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={!!exporting}
+                onClick={() => downloadExport("/api/vehicles/costs/export.pdf", "transitops-vehicle-costs.pdf")}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Costs PDF
+              </Button>
+            </div>
+            {exportError && (
+              <div className="basis-full text-xs text-red-400">{exportError}</div>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {kpis.map((kpi, i) => (
               <Card key={i} className={`bg-card/50 backdrop-blur-sm border-border/50 rounded-xl border-t-4 ${kpi.color} shadow-sm hover:shadow-lg transition-all hover:-translate-y-1`}>

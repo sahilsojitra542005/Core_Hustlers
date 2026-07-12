@@ -3,6 +3,7 @@ import Driver from "../models/Driver.js";
 import Trip from "../models/Trip.js";
 import FuelLog from "../models/FuelLog.js";
 import Expense from "../models/Expense.js";
+import { buildCsv, buildSimplePdf } from "../utils/exportUtils.js";
 
 export const getDashboardAnalytics = async (filters: {
   vehicleType?: string;
@@ -163,4 +164,48 @@ export const getReportAnalytics = async () => {
     monthlyRevenue,
     topCostliestVehicles: costliestVehicles.slice(0, 5),
   };
+};
+
+export const getReportCsv = async () => {
+  const reports = await getReportAnalytics();
+  const rows: unknown[][] = [
+    ["Metric", "Value"],
+    ["Fuel Efficiency", `${reports.kpis.fuelEfficiency} km/l`],
+    ["Fleet Utilization", `${reports.kpis.fleetUtilization}%`],
+    ["Operational Cost", reports.kpis.operationalCost],
+    ["Vehicle ROI", `${reports.kpis.vehicleRoi}%`],
+    [],
+    ["Month", "Revenue"],
+    ...reports.monthlyRevenue.map((revenue, index) => [`Month ${index + 1}`, revenue]),
+    [],
+    ["Costliest Vehicle", "Registration", "Total Cost"],
+    ...reports.topCostliestVehicles.map((vehicle) => [
+      vehicle.modelName,
+      vehicle.regNumber,
+      vehicle.totalCost,
+    ]),
+  ];
+
+  return buildCsv(["TransitOps Reports Export", ""], rows);
+};
+
+export const getReportPdf = async () => {
+  const reports = await getReportAnalytics();
+  const lines = [
+    `Fuel Efficiency: ${reports.kpis.fuelEfficiency} km/l`,
+    `Fleet Utilization: ${reports.kpis.fleetUtilization}%`,
+    `Operational Cost: ${reports.kpis.operationalCost}`,
+    `Vehicle ROI: ${reports.kpis.vehicleRoi}%`,
+    "",
+    "Monthly Revenue",
+    ...reports.monthlyRevenue.map((revenue, index) => `Month ${index + 1}: ${revenue}`),
+    "",
+    "Top Costliest Vehicles",
+    ...reports.topCostliestVehicles.map(
+      (vehicle, index) =>
+        `${index + 1}. ${vehicle.modelName} (${vehicle.regNumber}) - ${vehicle.totalCost}`
+    ),
+  ];
+
+  return buildSimplePdf("TransitOps Reports Export", lines);
 };

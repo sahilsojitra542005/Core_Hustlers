@@ -9,6 +9,7 @@ import {
   optionalNonNegativeNumber,
   requireNonNegativeNumber,
 } from "../utils/validation.js";
+import { buildCsv, buildSimplePdf } from "../utils/exportUtils.js";
 
 export const listTrips = async (filters: { status?: string; search?: string }) => {
   const query: any = {};
@@ -353,4 +354,62 @@ export const cancelTrip = async (tripId: string) => {
   } finally {
     await session.endSession();
   }
+};
+
+export const getTripsCsv = async () => {
+  const trips = await Trip.find()
+    .populate("vehicle")
+    .populate("driver")
+    .sort({ createdAt: -1 });
+
+  const rows = trips.map((trip: any) => [
+    trip.tripId,
+    trip.source,
+    trip.destination,
+    trip.vehicle?.regNumber || "",
+    trip.vehicle?.modelName || "",
+    trip.driver?.name || "",
+    trip.cargoWeight,
+    trip.plannedDistance,
+    trip.status,
+    trip.startOdometer || "",
+    trip.endOdometer || "",
+    trip.fuelConsumed || "",
+    trip.durationMinutes || "",
+  ]);
+
+  return buildCsv(
+    [
+      "Trip ID",
+      "Source",
+      "Destination",
+      "Vehicle Reg",
+      "Vehicle",
+      "Driver",
+      "Cargo Weight",
+      "Planned Distance",
+      "Status",
+      "Start Odometer",
+      "End Odometer",
+      "Fuel Consumed",
+      "Duration Minutes",
+    ],
+    rows
+  );
+};
+
+export const getTripsPdf = async () => {
+  const trips = await Trip.find()
+    .populate("vehicle")
+    .populate("driver")
+    .sort({ createdAt: -1 })
+    .limit(35);
+
+  const lines = trips.map((trip: any) => {
+    const vehicle = trip.vehicle?.regNumber || "Unassigned";
+    const driver = trip.driver?.name || "Unassigned";
+    return `${trip.tripId} | ${trip.source} to ${trip.destination} | ${vehicle} | ${driver} | ${trip.status}`;
+  });
+
+  return buildSimplePdf("TransitOps Trips Export", lines);
 };
