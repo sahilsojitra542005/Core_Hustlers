@@ -1,6 +1,7 @@
 import express, { Response } from "express";
-import Setting from "../models/Setting.js";
 import { protect, authorize, AuthRequest } from "../middleware/auth.js";
+import { getSettings, updateSettings } from "../services/settingsService.js";
+import { handleRouteError } from "../utils/routeErrorHandler.js";
 
 const router = express.Router();
 
@@ -12,19 +13,10 @@ router.get(
   protect,
   async (req: AuthRequest, res: Response): Promise<void | Response> => {
     try {
-      let setting = await Setting.findOne();
-
-      if (!setting) {
-        setting = await Setting.create({
-          depotName: "Gandhinagar Depot GJ4",
-          currency: "INR (Rs)",
-          distanceUnit: "Kilometers",
-        });
-      }
-
+      const setting = await getSettings();
       return res.json(setting);
     } catch (error: any) {
-      return res.status(500).json({ message: error.message });
+      return handleRouteError(error, res);
     }
   }
 );
@@ -37,23 +29,11 @@ router.put(
   protect,
   authorize("Fleet Manager"),
   async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    const { depotName, currency, distanceUnit } = req.body;
-
     try {
-      let setting = await Setting.findOne();
-
-      if (!setting) {
-        setting = new Setting();
-      }
-
-      if (depotName !== undefined) setting.depotName = depotName;
-      if (currency !== undefined) setting.currency = currency;
-      if (distanceUnit !== undefined) setting.distanceUnit = distanceUnit;
-
-      const updated = await setting.save();
-      return res.json(updated);
+      const setting = await updateSettings(req.body);
+      return res.json(setting);
     } catch (error: any) {
-      return res.status(500).json({ message: error.message });
+      return handleRouteError(error, res);
     }
   }
 );
