@@ -9,10 +9,12 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { logout } from "@/store/slices/authSlice";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
+import { fetchSettings } from "@/store/slices/settingsSlice";
 const ROUTE_ROLES: Record<string, string[]> = {
   "/dashboard": ["Dispatcher", "Financial Analyst", "Admin"],
-  "/settings": ["Fleet Manager", "Dispatcher", "Safety Officer", "Financial Analyst", "Admin"],
+  "/settings": ["Admin"],
   "/fleet": ["Fleet Manager", "Admin"],
   "/drivers": ["Safety Officer", "Admin"],
   "/trips": ["Dispatcher", "Admin"],
@@ -31,13 +33,16 @@ export default function DashboardLayout({
   const dispatch = useAppDispatch();
   const { user, isAuthenticated } = useAppSelector((state) => state.auth);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { settings, loading } = useAppSelector((state) => state.settings);
 
   useEffect(() => {
     // If not authenticated, redirect to login page
     if (!isAuthenticated && !user) {
       router.push("/");
+    } else if (isAuthenticated && !settings && !loading) {
+      dispatch(fetchSettings());
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, user, router, dispatch, settings, loading]);
 
   const navItems = [
     { name: "Dashboard", href: "/dashboard" },
@@ -51,19 +56,29 @@ export default function DashboardLayout({
   ];
 
   const userRole = user?.role || "";
+  const dynamicRouteRoles = settings?.routeRoles || {
+    "/dashboard": ["Dispatcher", "Financial Analyst", "Admin"],
+    "/settings": ["Fleet Manager", "Dispatcher", "Safety Officer", "Financial Analyst", "Admin"],
+    "/fleet": ["Fleet Manager", "Admin"],
+    "/drivers": ["Safety Officer", "Admin"],
+    "/trips": ["Dispatcher", "Admin"],
+    "/maintenance": ["Fleet Manager", "Admin"],
+    "/fuel-expenses": ["Financial Analyst", "Admin"],
+    "/analytics": ["Financial Analyst", "Admin"],
+  };
 
   const isAuthorized = (href: string) => {
     // Allow if no user is present yet to prevent flash of unauthorized if state is hydrating
     if (!user) return true;
-    const allowedRoles = ROUTE_ROLES[href];
-    return allowedRoles ? allowedRoles.includes(userRole) : true;
+    const allowedRoles = dynamicRouteRoles[href as keyof typeof dynamicRouteRoles];
+    return allowedRoles ? (allowedRoles as string[]).includes(userRole) : true;
   };
 
   const allowedNavItems = navItems.filter((item) => isAuthorized(item.href));
 
   // Determine if the current route is authorized
-  // Find the matching base route from ROUTE_ROLES for the current pathname
-  const currentBaseRoute = Object.keys(ROUTE_ROLES).find(r => pathname.startsWith(r)) || pathname;
+  // Find the matching base route from dynamicRouteRoles for the current pathname
+  const currentBaseRoute = Object.keys(dynamicRouteRoles).find(r => pathname.startsWith(r)) || pathname;
   const canAccessCurrentRoute = isAuthorized(currentBaseRoute);
 
   return (
@@ -173,6 +188,7 @@ export default function DashboardLayout({
                 onClick={() => {
                   dispatch(logout());
                   router.push("/");
+                  toast.success("Successfully logged out!");
                 }}
                 className="ml-1 sm:ml-2 text-xs sm:text-sm font-medium text-muted-foreground hover:text-red-400 transition-colors px-2 py-1 rounded hover:bg-red-500/10"
               >

@@ -11,6 +11,8 @@ import { loginUser, clearError } from "@/store/slices/authSlice";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LayoutGrid, X, Loader2, ArrowRight } from "lucide-react";
 
+import { toast } from "sonner";
+
 export default function LoginPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -41,8 +43,11 @@ export default function LoginPage() {
     dispatch(clearError());
     const resultAction = await dispatch(loginUser({ email, password, role }));
     if (loginUser.fulfilled.match(resultAction)) {
+      toast.success("Successfully logged in!");
       const targetRoute = DEFAULT_ROUTE_FOR_ROLE[role] || "/settings";
       router.push(targetRoute);
+    } else {
+      toast.error(resultAction.payload as string || "Login failed");
     }
   };
 

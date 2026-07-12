@@ -46,6 +46,11 @@ const seedDatabase = async () => {
     console.log("Seeding Users...");
     const usersData = [
       {
+        email: "admin@transitops.com",
+        password: "password123",
+        role: "Admin",
+      },
+      {
         email: "manager@transitops.com",
         password: "password123",
         role: "Fleet Manager",

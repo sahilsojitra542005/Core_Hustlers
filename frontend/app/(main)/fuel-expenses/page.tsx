@@ -5,6 +5,8 @@ import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import { fetchFuelLogs, fetchOtherExpenses, fetchExpenseSummary } from "@/store/slices/expenseSlice";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { LogFuelDialog } from "@/components/dialogs/LogFuelDialog";
+import { LogExpenseDialog } from "@/components/dialogs/LogExpenseDialog";
 
 export default function FuelExpensesPage() {
   const dispatch = useAppDispatch();
@@ -30,12 +32,8 @@ export default function FuelExpensesPage() {
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <h2 className="text-xl font-semibold opacity-0 hidden sm:block">Fuel & Expenses</h2>
         <div className="flex gap-4 w-full sm:w-auto">
-          <Button className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-primary-foreground shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5">
-            <Plus className="mr-2 h-4 w-4" /> Log Fuel
-          </Button>
-          <Button className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-primary-foreground shadow-md transition-all hover:shadow-lg hover:-translate-y-0.5">
-            <Plus className="mr-2 h-4 w-4" /> Add Expense
-          </Button>
+          <LogFuelDialog />
+          <LogExpenseDialog />
         </div>
       </div>
 

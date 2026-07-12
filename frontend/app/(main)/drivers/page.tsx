@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
+import { AddDriverDialog } from "@/components/dialogs/AddDriverDialog";
+
 export default function DriversPage() {
   const dispatch = useAppDispatch();
   const { drivers, loading } = useAppSelector((state) => state.driver);
@@ -37,9 +39,7 @@ export default function DriversPage() {
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold opacity-0">Drivers</h2>
         <div className="flex items-center gap-4">
-          <Button className="bg-[#c2843b] hover:bg-[#b4752c] text-white">
-            <Plus className="mr-2 h-4 w-4" /> Add Driver
-          </Button>
+          <AddDriverDialog />
         </div>
       </div>
 
