@@ -42,56 +42,57 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-8">
       {loading ? (
-        <div className="text-sm text-muted-foreground">Loading analytics...</div>
+        <div className="text-sm text-muted-foreground animate-pulse p-4 rounded-lg bg-card/50 border border-border/50">Loading analytics...</div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {kpis.map((kpi, i) => (
-              <Card key={i} className={`bg-transparent border-border rounded-lg border-t-4 ${kpi.color}`}>
-                <CardContent className="p-6">
-                  <div className="text-[10px] font-semibold text-muted-foreground tracking-wider mb-2 uppercase">{kpi.label}</div>
-                  <div className="text-3xl font-bold">{kpi.value}</div>
+              <Card key={i} className={`bg-card/50 backdrop-blur-sm border-border/50 rounded-xl border-t-4 ${kpi.color} shadow-sm hover:shadow-lg transition-all hover:-translate-y-1`}>
+                <CardContent className="p-6 relative overflow-hidden">
+                  <div className="text-[11px] font-semibold text-muted-foreground tracking-wider mb-2 uppercase relative z-10">{kpi.label}</div>
+                  <div className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-white to-white/70 relative z-10">{kpi.value}</div>
+                  <div className={`absolute -bottom-4 -right-4 w-24 h-24 rounded-full blur-2xl opacity-20 ${kpi.color.replace('border-t-', 'bg-')} z-0`}></div>
                 </CardContent>
               </Card>
             ))}
           </div>
           
-          <p className="text-xs text-muted-foreground">
-            ROI = (Revenue - (Maintenance + Fuel)) / Acquisition Cost
-          </p>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mt-8">
-            <div>
-              <h3 className="text-xs font-semibold text-muted-foreground tracking-wider uppercase mb-6">MONTHLY REVENUE</h3>
-              <div className="h-64 flex items-end gap-2 border-b border-border pb-2 px-2">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mt-8">
+            <div className="p-6 rounded-2xl border border-border/50 bg-card/30 backdrop-blur-sm shadow-sm">
+              <h3 className="text-xs font-semibold text-muted-foreground tracking-wider uppercase mb-8">MONTHLY REVENUE</h3>
+              <div className="h-64 flex items-end gap-2 border-b border-border/50 pb-2 px-2">
                 {monthlyRevenue.map((data, i) => (
                   <div key={i} className="flex-1 flex flex-col justify-end h-full group relative">
                     <div 
-                      className="w-full bg-blue-500/80 hover:bg-blue-400 transition-colors rounded-t-sm"
+                      className="w-full bg-gradient-to-t from-blue-600 to-blue-400 group-hover:from-blue-500 group-hover:to-blue-300 transition-all rounded-t-md shadow-[0_0_15px_rgba(59,130,246,0.2)] group-hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] relative"
                       style={{ height: data.height }}
-                    ></div>
-                    <div className="text-[10px] text-muted-foreground text-center mt-2">{data.month}</div>
+                    >
+                      <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-xs px-2 py-1 rounded shadow-lg transition-opacity whitespace-nowrap z-10">
+                        {data.height}
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-muted-foreground font-medium text-center mt-3 group-hover:text-primary transition-colors">{data.month}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div>
-              <h3 className="text-xs font-semibold text-muted-foreground tracking-wider uppercase mb-6">TOP COSTLIEST VEHICLES</h3>
+            <div className="p-6 rounded-2xl border border-border/50 bg-card/30 backdrop-blur-sm shadow-sm">
+              <h3 className="text-xs font-semibold text-muted-foreground tracking-wider uppercase mb-8">TOP COSTLIEST VEHICLES</h3>
               <div className="space-y-6">
                 {topCostliest.map((item, i) => (
-                  <div key={i} className="flex items-center gap-4">
-                    <div className="w-24 text-sm font-mono text-muted-foreground">{item.vehicle}</div>
-                    <div className="flex-1 h-4 bg-secondary rounded-sm overflow-hidden">
+                  <div key={i} className="flex items-center gap-4 group">
+                    <div className="w-24 text-sm font-mono text-muted-foreground group-hover:text-white transition-colors">{item.vehicle}</div>
+                    <div className="flex-1 h-3 bg-secondary rounded-full overflow-hidden shadow-inner">
                       <div 
-                        className={`h-full ${item.color}`} 
+                        className={`h-full ${item.color} shadow-[0_0_10px_currentColor] transition-all duration-1000`} 
                         style={{ width: `${item.percentage}%` }}
                       ></div>
                     </div>
                   </div>
                 ))}
                 {topCostliest.length === 0 && (
-                  <div className="text-sm text-muted-foreground">No data available</div>
+                  <div className="text-sm text-muted-foreground flex items-center justify-center h-40 border border-dashed border-border/50 rounded-lg">No data available</div>
                 )}
               </div>
             </div>

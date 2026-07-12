@@ -23,7 +23,7 @@ const initialState: AuthState = {
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async (credentials: { email: string; password: string }, { rejectWithValue }) => {
+  async (credentials: { email: string; password: string; role: string }, { rejectWithValue }) => {
     try {
       const response = await api.post('/api/auth/login', credentials);
       const { token, ...userData } = response.data;
@@ -61,6 +61,8 @@ export const authSlice = createSlice({
       state.isAuthenticated = false;
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
+        sessionStorage.removeItem('token');
+        sessionStorage.clear();
       }
     },
     clearError: (state) => {

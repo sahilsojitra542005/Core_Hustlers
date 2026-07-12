@@ -15,73 +15,78 @@ export default function SettingsPage() {
     dispatch(fetchSettings());
   }, [dispatch]);
 
-  const rbacRoles = [
-    { role: "Fleet Manager", fleet: "✓", drivers: "✓", trips: "-", fuel: "-", analytics: "✓" },
-    { role: "Dispatcher", fleet: "view", drivers: "-", trips: "✓", fuel: "-", analytics: "-" },
-    { role: "Safety Officer", fleet: "-", drivers: "✓", trips: "view", fuel: "-", analytics: "-" },
-    { role: "Financial Analyst", fleet: "view", drivers: "-", trips: "-", fuel: "✓", analytics: "✓" },
-  ];
+
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
       {/* Left Column: General */}
       <div>
-        <h3 className="text-xs font-semibold text-muted-foreground tracking-wider uppercase mb-6">GENERAL</h3>
-        {loading && !settings ? (
-          <div className="text-sm text-muted-foreground">Loading settings...</div>
-        ) : (
-          <form className="space-y-6">
-            <div className="space-y-2">
-              <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">DEPOT NAME</Label>
-              <Input defaultValue={settings?.depotName || ''} className="bg-transparent border-border h-10" />
-            </div>
+        <h3 className="text-xs font-semibold text-muted-foreground tracking-wider uppercase mb-6">GENERAL PREFERENCES</h3>
+        <div className="p-6 sm:p-8 rounded-2xl border border-border/50 bg-card/30 backdrop-blur-sm shadow-sm">
+          {loading && !settings ? (
+            <div className="text-sm text-muted-foreground animate-pulse">Loading settings...</div>
+          ) : (
+            <form className="space-y-6">
+              <div className="space-y-2">
+                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">DEPOT NAME</Label>
+                <Input defaultValue={settings?.depotName || ''} className="bg-white/5 border-border/50 h-12 focus-visible:ring-primary/50 text-foreground transition-all" />
+              </div>
 
-            <div className="space-y-2">
-              <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">CURRENCY</Label>
-              <Input defaultValue={settings?.currency || ''} className="bg-transparent border-border h-10" />
-            </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">CURRENCY</Label>
+                <Input defaultValue={settings?.currency || ''} className="bg-white/5 border-border/50 h-12 focus-visible:ring-primary/50 text-foreground transition-all" />
+              </div>
 
-            <div className="space-y-2">
-              <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">DISTANCE UNIT</Label>
-              <Input defaultValue={settings?.distanceUnit || ''} className="bg-transparent border-border h-10" />
-            </div>
+              <div className="space-y-2">
+                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">DISTANCE UNIT</Label>
+                <Input defaultValue={settings?.distanceUnit || ''} className="bg-white/5 border-border/50 h-12 focus-visible:ring-primary/50 text-foreground transition-all" />
+              </div>
 
-            <Button disabled className="w-40 bg-blue-500 hover:bg-blue-600 text-white mt-4 h-10">
-              Save changes
-            </Button>
-          </form>
-        )}
+              <div className="pt-4 border-t border-border/50">
+                <Button disabled className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground h-11 px-8 rounded-xl shadow-md transition-all">
+                  Save Changes
+                </Button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
 
-      {/* Right Column: RBAC */}
+      {/* Right Column: System Status */}
       <div>
-        <h3 className="text-xs font-semibold text-muted-foreground tracking-wider uppercase mb-6">ROLE-BASED ACCESS (RBAC)</h3>
+        <h3 className="text-xs font-semibold text-muted-foreground tracking-wider uppercase mb-6">SYSTEM STATUS</h3>
+        <div className="p-6 sm:p-8 rounded-2xl border border-border/50 bg-card/30 backdrop-blur-sm shadow-sm space-y-6">
+          <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-white/5">
+            <div>
+              <h4 className="text-sm font-semibold text-foreground">API Connection</h4>
+              <p className="text-xs text-muted-foreground mt-1">Backend service status</p>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.8)]"></span>
+              <span className="text-xs font-bold text-green-500 uppercase tracking-wider">Online</span>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-white/5">
+            <div>
+              <h4 className="text-sm font-semibold text-foreground">Database</h4>
+              <p className="text-xs text-muted-foreground mt-1">MongoDB cluster status</p>
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20">
+              <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></span>
+              <span className="text-xs font-bold text-green-500 uppercase tracking-wider">Connected</span>
+            </div>
+          </div>
 
-        <div className="rounded-lg border border-border overflow-hidden">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-secondary/30 text-[10px] text-muted-foreground uppercase border-b border-border tracking-wider">
-              <tr>
-                <th className="px-4 py-3 font-medium">ROLE</th>
-                <th className="px-4 py-3 font-medium text-center">FLEET</th>
-                <th className="px-4 py-3 font-medium text-center">DRIVERS</th>
-                <th className="px-4 py-3 font-medium text-center">TRIPS</th>
-                <th className="px-4 py-3 font-medium text-center">FUEL/EXP.</th>
-                <th className="px-4 py-3 font-medium text-center">ANALYTICS</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {rbacRoles.map((item, i) => (
-                <tr key={i} className="hover:bg-secondary/20 transition-colors">
-                  <td className="px-4 py-3 font-medium">{item.role}</td>
-                  <td className="px-4 py-3 text-center text-muted-foreground">{item.fleet}</td>
-                  <td className="px-4 py-3 text-center text-muted-foreground">{item.drivers}</td>
-                  <td className="px-4 py-3 text-center text-muted-foreground">{item.trips}</td>
-                  <td className="px-4 py-3 text-center text-muted-foreground">{item.fuel}</td>
-                  <td className="px-4 py-3 text-center text-muted-foreground">{item.analytics}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-white/5">
+            <div>
+              <h4 className="text-sm font-semibold text-foreground">App Version</h4>
+              <p className="text-xs text-muted-foreground mt-1">Current frontend release</p>
+            </div>
+            <div className="text-sm font-mono text-muted-foreground bg-secondary/50 px-3 py-1 rounded-md">
+              v1.0.0-rc.1
+            </div>
+          </div>
         </div>
       </div>
     </div>

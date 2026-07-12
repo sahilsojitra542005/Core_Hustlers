@@ -43,71 +43,57 @@ export default function DriversPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-border overflow-hidden">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-secondary/30 text-xs text-muted-foreground uppercase border-b border-border">
-            <tr>
-              <th className="px-6 py-4 font-medium">DRIVER</th>
-              <th className="px-6 py-4 font-medium">LICENSE NO.</th>
-              <th className="px-6 py-4 font-medium">CATEGORY</th>
-              <th className="px-6 py-4 font-medium">EXPIRY</th>
-              <th className="px-6 py-4 font-medium">CONTACT</th>
-              <th className="px-6 py-4 font-medium">TRIP COMPL.</th>
-              <th className="px-6 py-4 font-medium">SAFETY SCORE</th>
-              <th className="px-6 py-4 font-medium">STATUS</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {loading ? (
+      <div className="rounded-xl border border-border/50 overflow-hidden bg-card/30 backdrop-blur-sm shadow-sm mt-6">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left whitespace-nowrap">
+            <thead className="bg-secondary/30 text-[11px] text-muted-foreground uppercase tracking-wider border-b border-border/50">
               <tr>
-                <td colSpan={8} className="px-6 py-8 text-center text-muted-foreground">Loading drivers...</td>
+                <th className="px-6 py-4 font-semibold">DRIVER</th>
+                <th className="px-6 py-4 font-semibold">LICENSE NO.</th>
+                <th className="px-6 py-4 font-semibold">CATEGORY</th>
+                <th className="px-6 py-4 font-semibold">EXPIRY</th>
+                <th className="px-6 py-4 font-semibold">CONTACT</th>
+                <th className="px-6 py-4 font-semibold">TRIP COMPL.</th>
+                <th className="px-6 py-4 font-semibold">SAFETY SCORE</th>
+                <th className="px-6 py-4 font-semibold">STATUS</th>
               </tr>
-            ) : drivers.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="px-6 py-8 text-center text-muted-foreground">No drivers found.</td>
-              </tr>
-            ) : drivers.map((d) => (
-              <tr key={d._id} className="hover:bg-secondary/20 transition-colors">
-                <td className="px-6 py-4 font-medium">{d.name}</td>
-                <td className="px-6 py-4 font-mono">{d.licenseNumber}</td>
-                <td className="px-6 py-4">{d.licenseCategory}</td>
-                <td className="px-6 py-4 text-muted-foreground">
-                  {isExpired(d.licenseExpiryDate) ? (
-                    <span className="text-red-400">{formatDate(d.licenseExpiryDate)} (EXPIRED)</span>
-                  ) : formatDate(d.licenseExpiryDate)}
-                </td>
-                <td className="px-6 py-4 text-muted-foreground">{d.contactNumber}</td>
-                <td className="px-6 py-4">{d.tripCompletionRate}%</td>
-                <td className="px-6 py-4">{d.safetyScore}/100</td>
-                <td className="px-6 py-4">
-                  <span className={`px-3 py-1.5 rounded-md text-xs font-medium text-black ${
-                    d.status === 'Available' ? 'bg-green-500' :
-                    d.status === 'On Trip' ? 'bg-blue-400' :
-                    d.status === 'Suspended' ? 'bg-orange-500' : 'bg-gray-400'
-                  }`}>
-                    {d.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="space-y-4 pt-4 border-t border-border">
-        <div>
-          <h4 className="text-xs font-semibold text-muted-foreground tracking-wider uppercase mb-3">TOGGLE STAT</h4>
-          <div className="flex gap-4">
-            <span className="px-4 py-1.5 bg-green-500 text-black text-sm font-medium rounded-md cursor-pointer hover:opacity-90">Available</span>
-            <span className="px-4 py-1.5 bg-blue-400 text-black text-sm font-medium rounded-md cursor-pointer hover:opacity-90">On Trip</span>
-            <span className="px-4 py-1.5 bg-gray-400 text-black text-sm font-medium rounded-md cursor-pointer hover:opacity-90">Off Duty</span>
-            <span className="px-4 py-1.5 bg-orange-500 text-black text-sm font-medium rounded-md cursor-pointer hover:opacity-90">Suspended</span>
-          </div>
+            </thead>
+            <tbody className="divide-y divide-border/50">
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground animate-pulse">Loading drivers...</td>
+                </tr>
+              ) : drivers.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">No drivers found.</td>
+                </tr>
+              ) : drivers.map((d) => (
+                <tr key={d._id} className="hover:bg-secondary/20 transition-colors">
+                  <td className="px-6 py-4 font-medium text-primary/80">{d.name}</td>
+                  <td className="px-6 py-4 font-mono">{d.licenseNumber}</td>
+                  <td className="px-6 py-4">{d.licenseCategory}</td>
+                  <td className="px-6 py-4 text-muted-foreground">
+                    {isExpired(d.licenseExpiryDate) ? (
+                      <span className="text-red-400 font-semibold">{formatDate(d.licenseExpiryDate)} (EXPIRED)</span>
+                    ) : formatDate(d.licenseExpiryDate)}
+                  </td>
+                  <td className="px-6 py-4 text-muted-foreground">{d.contactNumber}</td>
+                  <td className="px-6 py-4">{d.tripCompletionRate}%</td>
+                  <td className="px-6 py-4">{d.safetyScore}/100</td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2.5 py-1 rounded text-[10px] font-bold text-black uppercase tracking-wider shadow-sm ${
+                      d.status === 'Available' ? 'bg-green-500' :
+                      d.status === 'On Trip' ? 'bg-blue-400' :
+                      d.status === 'Suspended' ? 'bg-orange-500' : 'bg-gray-400'
+                    }`}>
+                      {d.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-
-        <p className="text-xs text-[#c2843b] italic mt-4">
-          Rule: Expired license or Suspended status → blocked from trip assignment
-        </p>
       </div>
     </div>
   );
