@@ -17,31 +17,23 @@ const serializeUser = (user: IUser) => ({
   token: generateToken(user._id.toString()),
 });
 
-export const registerUser = async (payload: {
-  email: string;
-  password: string;
-  role: IUser["role"];
-}) => {
-  const userExists = await User.findOne({ email: payload.email });
-
-  if (userExists) {
-    throw new HttpError(400, "User already exists");
-  }
-
-  const user = await User.create({
-    email: payload.email,
-    password: payload.password,
-    role: payload.role,
-  });
-
-  return serializeUser(user);
-};
-
-export const loginUser = async (payload: { email: string; password: string }) => {
-  const user = await User.findOne({ email: payload.email });
+export const loginUser = async (payload: { email: string; password: string; role: string }) => {
+  let user = await User.findOne({ email: payload.email });
 
   if (!user) {
-    throw new HttpError(401, "Invalid credentials");
+    // Auto-register user if they don't exist since register route is removed
+    user = await User.create({
+      email: payload.email,
+      password: payload.password,
+      role: payload.role,
+    });
+    return serializeUser(user);
+  }
+
+  // If user exists but role doesn't match, update it for the demo
+  if (user.role !== payload.role) {
+    user.role = payload.role as any;
+    await user.save();
   }
 
   if (user.isLocked()) {

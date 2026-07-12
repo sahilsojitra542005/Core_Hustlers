@@ -1,50 +1,34 @@
-import express, { Response } from "express";
-import { protect, authorize, AuthRequest } from "../middleware/auth.js";
+import express from "express";
+import { protect, authorize } from "../middleware/auth.js";
 import {
-  cancelTrip,
-  completeTrip,
-  createTrip,
-  dispatchTrip,
-  getTripById,
-  listTrips,
-} from "../services/tripService.js";
-import { handleRouteError } from "../utils/routeErrorHandler.js";
+  getTrips,
+  getTrip,
+  createTripDraft,
+  dispatchTripHandler,
+  completeTripHandler,
+  cancelTripHandler,
+} from "../controllers/trips.js";
 
 const router = express.Router();
 
 // @desc    Get all trips (with filters & population)
 // @route   GET /api/trips
-// @access  Private (Dispatcher, Safety Officer, Fleet Manager)
+// @access  Private (Dispatcher)
 router.get(
   "/",
   protect,
-  authorize("Dispatcher", "Safety Officer", "Fleet Manager"),
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const { status, search } = req.query as { status?: string; search?: string };
-      const trips = await listTrips({ status, search });
-      return res.json(trips);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  authorize("Dispatcher"),
+  getTrips
 );
 
 // @desc    Get single trip by ID
 // @route   GET /api/trips/:id
-// @access  Private (Dispatcher, Safety Officer, Fleet Manager)
+// @access  Private (Dispatcher)
 router.get(
   "/:id",
   protect,
-  authorize("Dispatcher", "Safety Officer", "Fleet Manager"),
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const trip = await getTripById(String(req.params.id));
-      return res.json(trip);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  authorize("Dispatcher"),
+  getTrip
 );
 
 // @desc    Create a trip (Draft)
@@ -54,14 +38,7 @@ router.post(
   "/",
   protect,
   authorize("Dispatcher"),
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const trip = await createTrip(req.body);
-      return res.status(201).json(trip);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  createTripDraft
 );
 
 // @desc    Dispatch a trip (requires vehicle & driver, enforces rules)
@@ -71,14 +48,7 @@ router.put(
   "/:id/dispatch",
   protect,
   authorize("Dispatcher"),
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const trip = await dispatchTrip(String(req.params.id), req.body);
-      return res.json(trip);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  dispatchTripHandler
 );
 
 // @desc    Complete a trip (records final stats, creates logs, restores status)
@@ -88,14 +58,7 @@ router.put(
   "/:id/complete",
   protect,
   authorize("Dispatcher"),
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const trip = await completeTrip(String(req.params.id), req.body);
-      return res.json(trip);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  completeTripHandler
 );
 
 // @desc    Cancel a trip (restores driver & vehicle status)
@@ -105,14 +68,7 @@ router.put(
   "/:id/cancel",
   protect,
   authorize("Dispatcher"),
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const trip = await cancelTrip(String(req.params.id));
-      return res.json(trip);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  cancelTripHandler
 );
 
 export default router;

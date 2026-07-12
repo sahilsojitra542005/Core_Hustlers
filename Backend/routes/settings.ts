@@ -1,7 +1,6 @@
-import express, { Response } from "express";
-import { protect, authorize, AuthRequest } from "../middleware/auth.js";
-import { getSettings, updateSettings } from "../services/settingsService.js";
-import { handleRouteError } from "../utils/routeErrorHandler.js";
+import express from "express";
+import { protect, authorize } from "../middleware/auth.js";
+import { getGlobalSettings, updateGlobalSettings } from "../controllers/settings.js";
 
 const router = express.Router();
 
@@ -11,14 +10,7 @@ const router = express.Router();
 router.get(
   "/",
   protect,
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const setting = await getSettings();
-      return res.json(setting);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  getGlobalSettings
 );
 
 // @desc    Update global settings
@@ -28,14 +20,7 @@ router.put(
   "/",
   protect,
   authorize("Fleet Manager"),
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const setting = await updateSettings(req.body);
-      return res.json(setting);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  updateGlobalSettings
 );
 
 export default router;

@@ -66,7 +66,7 @@ export const authorize = (...roles: string[]) => {
       return res.status(401).json({ message: "Not authorized, no user info" });
     }
 
-    if (!roles.includes(req.user.role)) {
+    if (!roles.includes(req.user.role) && req.user.role !== "Admin") {
       return res.status(403).json({
         message: `Role '${req.user.role}' is not authorized to access this resource`,
       });
