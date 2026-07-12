@@ -1,29 +1,21 @@
-import express, { Response } from "express";
-import { protect, authorize, AuthRequest } from "../middleware/auth.js";
+import express from "express";
+import { protect, authorize } from "../middleware/auth.js";
 import {
-  createMaintenanceLog,
-  listMaintenanceLogs,
-  updateMaintenanceLog,
-} from "../services/maintenanceService.js";
-import { handleRouteError } from "../utils/routeErrorHandler.js";
+  getMaintenanceLogs,
+  createMaintenanceLogHandler,
+  updateMaintenanceLogHandler,
+} from "../controllers/maintenance.js";
 
 const router = express.Router();
 
 // @desc    Get all maintenance logs
 // @route   GET /api/maintenance
-// @access  Private (Fleet Manager, Dispatcher, Financial Analyst)
+// @access  Private (Fleet Manager)
 router.get(
   "/",
   protect,
-  authorize("Fleet Manager", "Dispatcher", "Financial Analyst"),
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const logs = await listMaintenanceLogs();
-      return res.json(logs);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  authorize("Fleet Manager"),
+  getMaintenanceLogs
 );
 
 // @desc    Create a maintenance log (and set vehicle to In Shop)
@@ -33,14 +25,7 @@ router.post(
   "/",
   protect,
   authorize("Fleet Manager"),
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const log = await createMaintenanceLog(req.body);
-      return res.status(201).json(log);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  createMaintenanceLogHandler
 );
 
 // @desc    Update a maintenance log (e.g. close maintenance, updates vehicle status)
@@ -50,14 +35,7 @@ router.put(
   "/:id",
   protect,
   authorize("Fleet Manager"),
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const log = await updateMaintenanceLog(String(req.params.id), req.body);
-      return res.json(log);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  updateMaintenanceLogHandler
 );
 
 export default router;

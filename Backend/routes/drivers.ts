@@ -1,118 +1,74 @@
-import express, { Response } from "express";
-import { protect, authorize, AuthRequest } from "../middleware/auth.js";
+import express from "express";
+import { protect, authorize } from "../middleware/auth.js";
 import {
-  createDriver,
-  deleteDriver,
-  getDriverById,
-  listDispatchDrivers,
-  listDrivers,
-  updateDriver,
-} from "../services/driverService.js";
-import { handleRouteError } from "../utils/routeErrorHandler.js";
+  getDrivers,
+  getDispatchDrivers,
+  getDriver,
+  createNewDriver,
+  updateDriverProfile,
+  deleteDriverProfile,
+} from "../controllers/drivers.js";
 
 const router = express.Router();
 
 // @desc    Get all drivers (with filtering and search)
 // @route   GET /api/drivers
-// @access  Private (Safety Officer, Fleet Manager)
+// @access  Private (Safety Officer)
 router.get(
   "/",
   protect,
-  authorize("Safety Officer", "Fleet Manager"),
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const { status, search } = req.query as { status?: string; search?: string };
-      const drivers = await listDrivers({ status, search });
-      return res.json(drivers);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  authorize("Safety Officer"),
+  getDrivers
 );
 
 // @desc    Get eligible drivers for dispatch selection
 // @route   GET /api/drivers/dispatch-selection
-// @access  Private (Dispatcher, Safety Officer, Fleet Manager)
+// @access  Private (Dispatcher, Safety Officer)
 router.get(
   "/dispatch-selection",
   protect,
-  authorize("Dispatcher", "Safety Officer", "Fleet Manager"),
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const drivers = await listDispatchDrivers();
-      return res.json(drivers);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  authorize("Dispatcher", "Safety Officer"),
+  getDispatchDrivers
 );
 
 // @desc    Get a single driver profile
 // @route   GET /api/drivers/:id
-// @access  Private (Safety Officer, Fleet Manager)
+// @access  Private (Safety Officer)
 router.get(
   "/:id",
   protect,
-  authorize("Safety Officer", "Fleet Manager"),
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const driver = await getDriverById(String(req.params.id));
-      return res.json(driver);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  authorize("Safety Officer"),
+  getDriver
 );
 
 // @desc    Create driver profile
 // @route   POST /api/drivers
-// @access  Private (Safety Officer, Fleet Manager)
+// @access  Private (Safety Officer)
 router.post(
   "/",
   protect,
-  authorize("Safety Officer", "Fleet Manager"),
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const driver = await createDriver(req.body);
-      return res.status(201).json(driver);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  authorize("Safety Officer"),
+  createNewDriver
 );
 
 // @desc    Update driver profile
 // @route   PUT /api/drivers/:id
-// @access  Private (Safety Officer, Fleet Manager)
+// @access  Private (Safety Officer)
 router.put(
   "/:id",
   protect,
-  authorize("Safety Officer", "Fleet Manager"),
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const driver = await updateDriver(String(req.params.id), req.body);
-      return res.json(driver);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  authorize("Safety Officer"),
+  updateDriverProfile
 );
 
 // @desc    Delete driver profile
 // @route   DELETE /api/drivers/:id
-// @access  Private (Safety Officer, Fleet Manager)
+// @access  Private (Safety Officer)
 router.delete(
   "/:id",
   protect,
-  authorize("Safety Officer", "Fleet Manager"),
-  async (req: AuthRequest, res: Response): Promise<void | Response> => {
-    try {
-      const result = await deleteDriver(String(req.params.id));
-      return res.json(result);
-    } catch (error: any) {
-      return handleRouteError(error, res);
-    }
-  }
+  authorize("Safety Officer"),
+  deleteDriverProfile
 );
 
 export default router;

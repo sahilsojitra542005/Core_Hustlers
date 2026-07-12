@@ -35,7 +35,7 @@ export default function SettingsPage() {
               <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">DEPOT NAME</Label>
               <Input defaultValue={settings?.depotName || ''} className="bg-transparent border-border h-10" />
             </div>
-            
+
             <div className="space-y-2">
               <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">CURRENCY</Label>
               <Input defaultValue={settings?.currency || ''} className="bg-transparent border-border h-10" />
@@ -56,7 +56,7 @@ export default function SettingsPage() {
       {/* Right Column: RBAC */}
       <div>
         <h3 className="text-xs font-semibold text-muted-foreground tracking-wider uppercase mb-6">ROLE-BASED ACCESS (RBAC)</h3>
-        
+
         <div className="rounded-lg border border-border overflow-hidden">
           <table className="w-full text-sm text-left">
             <thead className="bg-secondary/30 text-[10px] text-muted-foreground uppercase border-b border-border tracking-wider">
