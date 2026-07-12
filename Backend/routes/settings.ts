@@ -6,20 +6,21 @@ const router = express.Router();
 
 // @desc    Get global settings
 // @route   GET /api/settings
-// @access  Private (All Roles)
+// @access  Private (Admin Only)
 router.get(
   "/",
   protect,
+  authorize("Admin"),
   getGlobalSettings
 );
 
 // @desc    Update global settings
 // @route   PUT /api/settings
-// @access  Private (Fleet Manager)
+// @access  Private (Admin Only)
 router.put(
   "/",
   protect,
-  authorize("Fleet Manager"),
+  authorize("Admin"),
   updateGlobalSettings
 );
 

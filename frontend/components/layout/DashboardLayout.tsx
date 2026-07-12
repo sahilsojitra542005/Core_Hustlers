@@ -12,6 +12,16 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 import { fetchSettings } from "@/store/slices/settingsSlice";
+const ROUTE_ROLES: Record<string, string[]> = {
+  "/dashboard": ["Dispatcher", "Financial Analyst", "Admin"],
+  "/settings": ["Admin"],
+  "/fleet": ["Fleet Manager", "Admin"],
+  "/drivers": ["Safety Officer", "Admin"],
+  "/trips": ["Dispatcher", "Admin"],
+  "/maintenance": ["Fleet Manager", "Admin"],
+  "/fuel-expenses": ["Financial Analyst", "Admin"],
+  "/analytics": ["Financial Analyst", "Admin"],
+};
 
 export default function DashboardLayout({
   children,
